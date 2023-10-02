@@ -14,6 +14,8 @@ from trame.app import get_server, asynchronous
 
 #import numpy as np
 
+#import tkinter
+#from PIL import Image, ImageTk
 
 import matplotlib
 matplotlib.use("agg")
@@ -35,11 +37,6 @@ from trame.widgets import matplotlib as tramematplotlib
 #for param in ['text.color', 'axes.labelcolor', 'xtick.color', 'ytick.color']:
 #  plt.rcParams[param] = '0.9'  # very light grey
 #ax.grid(color='#2A3459')  # bluish dark grey, but slightly lighter than background
-
-#from trame.app import get_server
-#from trame.ui.html import DivLayout
-#from trame.widgets import html
-
 
 SMALL_SIZE = 10
 MEDIUM_SIZE = 10
@@ -74,8 +71,6 @@ history_filename = 'history.csv'
 state.monitorLinesVisibility = []
 state.monitorLinesNames = []
 state.monitorLinesRange = []
-
-
 state.dataframe = []
 state.x = []
 state.ylist= []
@@ -83,150 +78,11 @@ state.ylist= []
 state.initialization_state_idx = 0
 state.show_dialog = False
 state.show_dialog2 = False
-state.show_dialog3 = False
 
 countdown_init = 100
 # keep updating the graph
 state.keep_updating = True
 state.countdown = 1000
-
-
-# file_browser_ui.py
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
-import sys
-
-# A simple widget consisting of a QLabel, a QLineEdit and a
-# QPushButton. The class could be implemented in a separate
-# script called, say, file_browser.py
-class FileBrowser(QWidget):
-
-    OpenFile = 0
-
-    def __init__(self, title, mode=OpenFile):
-        QWidget.__init__(self)
-        layout = QHBoxLayout()
-        self.setLayout(layout)
-        self.browser_mode = mode
-        self.filter_name = 'All files (*.*)'
-        self.dirpath = QDir.currentPath()
-        self.filepaths = []
-
-        self.label = QLabel()
-        self.label.setText(title)
-        self.label.setFixedWidth(65)
-        self.label.setFont(QFont("Arial",weight=QFont.Bold))
-        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        layout.addWidget(self.label)
-
-        self.lineEdit = QLineEdit(self)
-        self.lineEdit.setFixedWidth(180)
-
-        layout.addWidget(self.lineEdit)
-
-        self.button = QPushButton('Search')
-        self.button.clicked.connect(self.getFile)
-        layout.addWidget(self.button)
-        layout.addStretch()
-    #--------------------------------------------------------------------
-    def setMode(mode):
-        self.mode = mode
-    #--------------------------------------------------------------------
-    # For example,
-    #    setFileFilter('Images (*.png *.xpm *.jpg)')
-    def setFileFilter(text):
-        self.filter_name = text
-    #--------------------------------------------------------------------
-    def setDefaultDir(path):
-        self.dirpath = path
-    #--------------------------------------------------------------------
-    def getFile(self):
-        self.filepaths = []
-
-        if self.browser_mode == FileBrowser.OpenFile:
-            self.filepaths.append(QFileDialog.getOpenFileName(self, caption='Choose File',
-                                                    directory=self.dirpath,
-                                                    filter=self.filter_name)[0])
-        if len(self.filepaths) == 0:
-            return
-        elif len(self.filepaths) == 1:
-            self.lineEdit.setText(self.filepaths[0])
-        else:
-            self.lineEdit.setText(",".join(self.filepaths))
-    #--------------------------------------------------------------------
-    def setLabelWidth(self, width):
-        self.label.setFixedWidth(width)
-    #--------------------------------------------------------------------
-    def setlineEditWidth(self, width):
-        self.lineEdit.setFixedWidth(width)
-    #--------------------------------------------------------------------
-    def getPaths(self):
-        return self.filepaths
-#-------------------------------------------------------------------
-
-class Demo(QDialog):
-    def __init__(self, parent=None):
-        QDialog.__init__(self, parent)
-
-        # Ensure our window stays in front and give it a title
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.setWindowTitle("File Browsing Dialog")
-        self.setFixedSize(400, 300)
-
-        # Create and assign the main (vertical) layout.
-        vlayout = QVBoxLayout()
-        self.setLayout(vlayout)
-
-        self.fileBrowserPanel(vlayout)
-        vlayout.addStretch()
-        self.addButtonPanel(vlayout)
-        self.show()
-    #--------------------------------------------------------------------
-    def fileBrowserPanel(self, parentLayout):
-        vlayout = QVBoxLayout()
-        self.fileFB = FileBrowser('Open File', FileBrowser.OpenFile)
-        vlayout.addWidget(self.fileFB)
-        vlayout.addStretch()
-        parentLayout.addLayout(vlayout)
-    #--------------------------------------------------------------------
-    def addButtonPanel(self, parentLayout):
-        hlayout = QHBoxLayout()
-        hlayout.addStretch()
-
-        self.button = QPushButton("OK")
-        self.button.clicked.connect(self.buttonAction)
-        hlayout.addWidget(self.button)
-        parentLayout.addLayout(hlayout)
-    #--------------------------------------------------------------------
-    def buttonAction(self):
-        global history_filename
-        print(self.fileFB.getPaths())
-        history_filename = self.fileFB.getPaths()[0]
-        print("filename=",history_filename)
-        readHistory(history_filename)
-
-        self.done(1)
-
-    #--------------------------------------------------------------------
-
-@ctrl.set("open_directory_qt")
-def open_directory_qt():
-    #kwargs = {
-    #    "title": "Select Directory",
-    #}
-    #state.selected_dir = filedialog.askopenfilename(**kwargs)
-    #print("state.selected_dir=",state.selected_dir)
-    print("create qapplication")
-    app = QApplication(sys.argv)
-    demo = Demo() # <<-- Create an instance
-    demo.show()
-    app.exec_()
-    print("exit")
-
-
 
 @asynchronous.task
 async def start_countdown():
@@ -237,7 +93,7 @@ async def start_countdown():
 
     while state.keep_updating:
         with state:
-            await asyncio.sleep(5.0)
+            await asyncio.sleep(10.0)
             print("keep updating = ",state.keep_updating)
             global history_filename
             readHistory(history_filename)
@@ -299,59 +155,15 @@ def dialog_card():
         with vuetify.VCol(classes="text-right"):
           vuetify.VBtn("Close", classes="mt-5",click=update_dialog2)
 
-   # show_dialog2 determines if the entire dialog is shown or not
-    with vuetify.VDialog(width=200,position='{X:10,Y:10}',transition="dialog-top-transition",v_model=("show_dialog3",False)):
-      #with vuetify.VCard(color="light-gray"):
-      with vuetify.VCard():
-        vuetify.VCardTitle("Line-tab2 visibility", classes="grey lighten-1 grey--text text--darken-3")
-
-        #with vuetify.VListGroup(value=("true",), sub_group=True):
-        #    with vuetify.Template(v_slot_activator=True):
-        #            vuetify.VListItemTitle("Bars")
-        #    with vuetify.VListItemContent():
-        #            #with vuetify.VListItem(v_for="id in monitorLinesRange", key="id"):
-        vuetify.VCheckbox(
-                              # loop over list monitorLinesRange
-                              v_for="id in monitorLinesRange",
-                              key="id",
-                              # checkbox changes the state of monitorLinesVisibility[id]
-                              v_model=("monitorLinesVisibility[id]",),
-                              # name of the checkbox
-                              label=("`label= ${ monitorLinesNames[id] }`",),
-                              # on each change, immediately go to update_visibility
-                              change=(update_visibility,"[id, $event]"),
-                              classes="mt-1 pt-1",
-                              hide_details=True,
-                              dense=True,
-        )
-
-        #print("d.names=",state.monitorLinesNames)
-        #print("d.range=",state.monitorLinesRange)
-        #print("d.visibility=",state.monitorLinesVisibility)
-
-
-        # close dialog window button
-        #with vuetify.VCardText():
-        # right-align the button
-        with vuetify.VCol(classes="text-right"):
-          vuetify.VBtn("Close", classes="mt-5",click=update_dialog3)
-
 
 def update_dialog():
     state.show_dialog = not state.show_dialog
-
 def update_dialog2():
     state.show_dialog2 = not state.show_dialog2
     state.dirty('monitorLinesVisibility')
     state.dirty('monitorLinesNames')
     state.dirty('monitorLinesRange')
 
-
-def update_dialog3():
-    state.show_dialog3 = not state.show_dialog3
-    state.dirty('monitorLinesVisibility')
-    state.dirty('monitorLinesNames')
-    state.dirty('monitorLinesRange')
 
 
 # client-state file reader
@@ -420,14 +232,10 @@ def figure_size():
     if state.figure_size is None:
         return {}
 
-
     dpi = state.figure_size.get("dpi")
     rect = state.figure_size.get("size")
     w_inch = rect.get("width") / dpi
     h_inch = rect.get("height") / dpi
-
-    if ((w_inch<=0) or (h_inch<=0)):
-       return {}
 
     return {
         "figsize": (w_inch, h_inch),
@@ -442,7 +250,7 @@ def figure_size():
 ###############################################################################
 def DotsandPoints():
 
-    plt.close('all')
+
     fig, ax = plt.subplots(1,1,**figure_size(),facecolor='blue')
     #ax.cla()
 
@@ -564,6 +372,9 @@ with SinglePageWithDrawerLayout(server) as layout:
     print("x=",state.x)
     print("y=",state.ylist)
 
+
+
+
     # left side menu
     with layout.drawer as drawer:
         # drawer components
@@ -573,12 +384,6 @@ with SinglePageWithDrawerLayout(server) as layout:
 
     with layout.toolbar:
         vuetify.VSpacer()
-
-        with vuetify.VBtn("path",click=ctrl.open_directory_qt):
-            vuetify.VIcon("{{solver_icon}}",color="red")
-
-        #with vuetify.VBtn("filename",click=ctrl.open_file):
-        #    vuetify.VIcon("{{solver_icon}}",color="blue")
 
         #with vuetify.VBtn(icon=True, click=su2_play, disabled=("export_disabled",False)):
         with vuetify.VBtn("Real-time update",click=su2_play):
@@ -632,14 +437,7 @@ with SinglePageWithDrawerLayout(server) as layout:
             with vuetify.VTabItem(
                value=(1,), style="width: 100%; height: 100%;"
             ):
-             with vuetify.VRow(dense=True, style="height: 100%;", classes="pa-0 ma-0"):
-                with vuetify.VBtn(classes="ml-2 mr-0 mt-16 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog3, icon="mdi-dots-vertical"):
-                  vuetify.VIcon("mdi-dots-vertical",density="compact",color="red")
-                with vuetify.VCol(
-                    classes="pa-0 ma-0",
-                    #style="border-right: 1px solid #ccc; position: relative;",
-                ):
-                  with trame.SizeObserver("figure_size"):
+               with trame.SizeObserver("figure_size"):
                     html_figure2 = tramematplotlib.Figure(style="position: absolute")
                     ctrl.update_figure2 = html_figure2.update
 

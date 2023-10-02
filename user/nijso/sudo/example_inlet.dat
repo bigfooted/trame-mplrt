@@ -1,0 +1,5 @@
+NMARK= 1
+MARKER_TAG= inlet
+NROW=2310
+NCOL=10
+# COORD-X               COORD-Y                 COORD-Z                 TEMPERATURE             VELOCITY                NORMAL-X                NORMAL-Y                NORMAL-Z                TKE                     DISSIPATION
