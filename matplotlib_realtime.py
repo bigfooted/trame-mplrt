@@ -2,18 +2,9 @@ r"""
 Matplotlib realtime plotting of residuals
 """
 
-#import sys
-#import os.path
 import io
 import asyncio
 from trame.app import get_server, asynchronous
-
-# time scheduler (realtime plotting of file data)
-#import schedule,time
-#import threading
-
-#import numpy as np
-
 
 import matplotlib
 matplotlib.use("agg")
@@ -25,20 +16,6 @@ from trame.app import get_server
 from trame.ui.vuetify import SinglePageLayout
 from trame.widgets import vuetify, trame
 from trame.widgets import matplotlib as tramematplotlib
-# importing the style package
-#from matplotlib import style
-#import matplotlib.backends.backend_tkagg as tkagg
-#mpl.rcParams["figure.facecolor"]="black"
-#plt.style.use("seaborn-dark")
-#for param in ['figure.facecolor', 'axes.facecolor', 'savefig.facecolor']:
-#  plt.rcParams[param] = '#212946'  # bluish dark grey
-#for param in ['text.color', 'axes.labelcolor', 'xtick.color', 'ytick.color']:
-#  plt.rcParams[param] = '0.9'  # very light grey
-#ax.grid(color='#2A3459')  # bluish dark grey, but slightly lighter than background
-
-#from trame.app import get_server
-#from trame.ui.html import DivLayout
-#from trame.widgets import html
 
 
 SMALL_SIZE = 10
@@ -85,10 +62,9 @@ state.show_dialog = False
 state.show_dialog2 = False
 state.show_dialog3 = False
 
-countdown_init = 100
 # keep updating the graph
 state.keep_updating = True
-state.countdown = 1000
+state.countdown = True
 
 
 # tk file browser
@@ -251,21 +227,15 @@ def open_directory_tk():
 
 @asynchronous.task
 async def start_countdown():
-    try:
-        state.countdown = int(state.countdown)
-    except:
-        state.countdown = countdown_init
 
     while state.keep_updating:
         with state:
-            await asyncio.sleep(5.0)
+            await asyncio.sleep(1.0)
             print("keep updating = ",state.keep_updating)
             global history_filename
             readHistory(history_filename)
-
-            #state.countdown = not state.countdown
-            state.countdown -= 1
-
+            # we flip-flop the true-false state to keep triggering the state and read the history file
+            state.countdown = not state.countdown
 
 # -----------------------------------------------------------------------------
 # Chart examples from:
@@ -309,10 +279,6 @@ def dialog_card():
                               dense=True,
         )
 
-        #print("d.names=",state.monitorLinesNames)
-        #print("d.range=",state.monitorLinesRange)
-        #print("d.visibility=",state.monitorLinesVisibility)
-
 
         # close dialog window button
         #with vuetify.VCardText():
@@ -346,13 +312,9 @@ def dialog_card():
                               dense=True,
         )
 
-        #print("d.names=",state.monitorLinesNames)
-        #print("d.range=",state.monitorLinesRange)
-        #print("d.visibility=",state.monitorLinesVisibility)
 
 
         # close dialog window button
-        #with vuetify.VCardText():
         # right-align the button
         with vuetify.VCol(classes="text-right"):
           vuetify.VBtn("Close", classes="mt-5",click=update_dialog3)
@@ -417,10 +379,6 @@ def readHistory(filename):
     state.monitorLinesNames = list(dfrms)
     state.monitorLinesRange = list(range(0,len(state.monitorLinesNames)))
     state.monitorLinesVisibility = [True for i in dfrms]
-
-    #print("names=",state.monitorLinesNames)
-    #print("range=",state.monitorLinesRange)
-    #print("visibility=",state.monitorLinesVisibility)
 
     state.dirty('monitorLinesVisibility')
     state.dirty('monitorLinesNames')
@@ -525,6 +483,8 @@ def su2_play():
         state.solver_icon="mdi-stop-circle"
         print("Real-time update!"),
         state.keep_updating = True
+        start_countdown()
+
     else:
         state.solver_icon="mdi-play-circle"
         print("Real-time update stopped!"),
@@ -641,12 +601,26 @@ with SinglePageWithDrawerLayout(server) as layout:
                 value=(0,), style="width: 100%; height: 100%;"
             ):
               with vuetify.VRow(dense=True, style="height: 100%;", classes="pa-0 ma-0"):
-                with vuetify.VBtn(classes="ml-2 mr-0 mt-16 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
-                  vuetify.VIcon("mdi-dots-vertical",density="compact",color="green")
-                with vuetify.VCol(
-                    classes="pa-0 ma-0",
-                    #style="border-right: 1px solid #ccc; position: relative;",
-                ):
+                with vuetify.VCol(cols="1",classes="pa-0 ma-0"):
+
+
+                  with vuetify.VRow(dense=True,classes="pa-0 ma-0"):
+                    with vuetify.VBtn(classes="ml-2 mr-0 mt-6 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
+                      vuetify.VIcon("mdi-dots-vertical",density="compact",color="green")
+                  with vuetify.VRow(dense=True,classes="pa-0 ma-0"):
+                    with vuetify.VBtn(classes="ml-2 mr-0 mt-6 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
+                      vuetify.VIcon("mdi-dots-vertical",density="compact",color="red")
+                  with vuetify.VRow(dense=True,classes="pa-0 ma-0"):
+                    with vuetify.VBtn(classes="ml-2 mr-0 mt-6 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
+                      vuetify.VIcon("mdi-dots-vertical",density="compact",color="blue")
+                  with vuetify.VRow(dense=True,classes="pa-0 ma-0"):
+                    with vuetify.VBtn(classes="ml-2 mr-0 mt-6 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
+                      vuetify.VIcon("mdi-dots-vertical",density="compact",color="black")
+                  with vuetify.VRow(dense=True,classes="pa-0 ma-0"):
+                    with vuetify.VBtn(classes="ml-2 mr-0 mt-6 mb-0 pa-0", elevation=1,variant="text",color="white",click=update_dialog2, icon="mdi-dots-vertical"):
+                      vuetify.VIcon("mdi-dots-vertical",density="compact",color="green")
+
+                with vuetify.VCol(cols="11",classes="pl-n0 pr-0 py-0 ml-n12 mr-0 my-0"):
                   with trame.SizeObserver("figure_size"):
                     html_figure1 = tramematplotlib.Figure(style="position: absolute")
                     ctrl.update_figure1 = html_figure1.update
@@ -659,7 +633,6 @@ with SinglePageWithDrawerLayout(server) as layout:
                   vuetify.VIcon("mdi-dots-vertical",density="compact",color="red")
                 with vuetify.VCol(
                     classes="pa-0 ma-0",
-                    #style="border-right: 1px solid #ccc; position: relative;",
                 ):
                   with trame.SizeObserver("figure_size"):
                     html_figure2 = tramematplotlib.Figure(style="position: absolute")
